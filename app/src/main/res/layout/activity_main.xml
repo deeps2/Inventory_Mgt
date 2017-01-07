@@ -14,15 +14,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:src="@drawable/cart"/>
+            android:src="@drawable/add_cart"/>
 
         <TextView
             android:id="@+id/empty_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/empty_cart"
+            android:layout_centerInParent="true"
             android:layout_centerHorizontal="true"
-            android:text="Nothing in Inventory. Please add some Products." />
+            android:text="Pls Add some Items" />
 
     </RelativeLayout>
 

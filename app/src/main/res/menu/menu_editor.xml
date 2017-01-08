@@ -9,7 +9,13 @@
         app:showAsAction="always" />
 
     <item
-        android:id="@+id/action_delete"
-        android:title="Delete"
+        android:id="@+id/action_delete_item"
+        android:title="Delete Item"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/order_more"
+        android:title="Order more"
+        app:showAsAction="never" />
+
 </menu>

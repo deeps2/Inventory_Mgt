@@ -6,7 +6,6 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.app.LoaderManager;
@@ -17,8 +16,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
-
-import static android.R.attr.id;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -164,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         //problem is is pets app i was not updating anything in list_items INSIDE 1st activity
         //but here i am decreasing quantity by clicking on sale button
 
-        //TODO: so swapcursor or setadapter again??? or can decrease the item number inside InventoryCursorAdapter (it will be instant) and no need to swap adapter(i think so)
+        //TODO: so swapcursor or setadapter again???
         //because when u come back from editor activity to main activity then listview will be refreshed like petsapp.
 
         //TODO: or adapter.setnotifydatasetchanged() call???which one to do

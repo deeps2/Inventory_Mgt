@@ -11,8 +11,6 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import static android.R.attr.id;
-
 public class InventoryCursorAdapter extends CursorAdapter {
 
     private final MainActivity activity;

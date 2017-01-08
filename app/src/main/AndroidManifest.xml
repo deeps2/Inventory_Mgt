@@ -18,7 +18,7 @@
         </activity>
 
         <activity android:name=".EditorActivity"
-            android:label="Add new Product">
+                  android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
             </intent-filter>

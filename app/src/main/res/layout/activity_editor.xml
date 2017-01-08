@@ -38,6 +38,7 @@
                         android:textColor="@color/colorAccent" />
 
                     <EditText
+                        android:id="@+id/product_name"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
@@ -58,11 +59,12 @@
                         android:textColor="@color/colorAccent" />
 
                     <EditText
+                        android:id="@+id/product_price"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
-                        android:inputType="phone"
-                        android:hint="200" />
+                        android:hint="200"
+                        android:inputType="phone" />
 
                 </LinearLayout>
 
@@ -74,32 +76,35 @@
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
                         android:layout_weight="1"
+                        android:gravity="center_vertical"
                         android:paddingLeft="8dp"
                         android:text="Item Quantity"
-                        android:gravity="center_vertical"
                         android:textColor="@color/colorAccent" />
 
                     <LinearLayout
                         android:layout_width="0dp"
-                        android:layout_weight="2"
-                        android:layout_height="wrap_content">
-
-                    <Button
-                        android:layout_width="50dp"
                         android:layout_height="wrap_content"
-                        android:text="+" />
+                        android:layout_weight="2">
 
-                    <EditText
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:inputType="phone"
-                        android:textAlignment="center"
-                        android:hint="45" />
+                        <Button
+                            android:id="@+id/plus"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:text="+" />
 
-                    <Button
-                        android:layout_width="50dp"
-                        android:layout_height="wrap_content"
-                        android:text="-"/>
+                        <EditText
+                            android:id="@+id/item_quantity"
+                            android:layout_width="100dp"
+                            android:layout_height="wrap_content"
+                            android:hint="45"
+                            android:inputType="phone"
+                            android:textAlignment="center" />
+
+                        <Button
+                            android:id="@+id/minus"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:text="-" />
 
                     </LinearLayout>
 
@@ -118,6 +123,7 @@
                         android:textColor="@color/colorAccent" />
 
                     <EditText
+                        android:id="@+id/supplier_name"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
@@ -138,11 +144,12 @@
                         android:textColor="@color/colorAccent" />
 
                     <EditText
+                        android:id="@+id/supplier_phone"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
-                        android:inputType="phone"
-                        android:hint="9976523485" />
+                        android:hint="9976523485"
+                        android:inputType="phone" />
 
                 </LinearLayout>
 
@@ -159,11 +166,12 @@
                         android:textColor="@color/colorAccent" />
 
                     <EditText
+                        android:id="@+id/supplier_email"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
-                        android:inputType="textEmailAddress"
-                        android:hint="order@wsretail.com" />
+                        android:hint="order@wsretail.com"
+                        android:inputType="textEmailAddress" />
 
                 </LinearLayout>
 
@@ -180,6 +188,7 @@
                         android:textColor="@color/colorAccent" />
 
                     <Button
+                        android:id="@+id/add_image_button"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="2"
@@ -188,11 +197,12 @@
                 </LinearLayout>
 
                 <ImageView
+                    android:id="@+id/product_image"
                     android:layout_width="125dp"
                     android:layout_height="125dp"
                     android:layout_gravity="center"
                     android:layout_margin="8dp"
-                    android:src="@drawable/add_image"/>
+                    android:src="@drawable/add_image" />
             </LinearLayout>
 
         </android.support.v7.widget.CardView>

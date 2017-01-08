@@ -1,5 +1,6 @@
 package com.shikhar.inventory_mgt;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -10,10 +11,15 @@ import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import static android.R.attr.id;
+
 public class InventoryCursorAdapter extends CursorAdapter {
 
-    public InventoryCursorAdapter(Context context, Cursor c) {
+    private final MainActivity activity;
+
+    public InventoryCursorAdapter(MainActivity context, Cursor c) {
         super(context, c, 0/*flags*/);
+        activity = context;
     }
 
     @Override
@@ -22,7 +28,7 @@ public class InventoryCursorAdapter extends CursorAdapter {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
+    public void bindView(View view, Context context, final Cursor cursor) {
 
         ImageView itemImage = (ImageView) view.findViewById(R.id.item_image);
         TextView itemName = (TextView) view.findViewById(R.id.item_name);
@@ -52,19 +58,18 @@ public class InventoryCursorAdapter extends CursorAdapter {
                 )
         ));
 
-        quantity.setText(String.valueOf(
-                cursor.getInt(
-                        cursor.getColumnIndex(
-                                InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY
-                        )
-                )
-        ));
+        final int mQuantity = cursor.getInt(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY));
+        quantity.setText(String.valueOf(mQuantity));
+
+        final long itemId = cursor.getLong(cursor.getColumnIndex(InventoryContract.InventoryEntry._ID));
+        final Uri currentItemUri = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, itemId);
 
         //decrease quantity by 1 when sale image is clicked
         sale.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                activity.decreaseQuantity();
+              //  activity.decreaseQuantity(mQuantity, itemId);
+                activity.update(currentItemUri, mQuantity);
             }
         });
     }

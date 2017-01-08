@@ -1,10 +1,12 @@
 package com.shikhar.inventory_mgt;
 
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.design.widget.FloatingActionButton;
 import android.app.LoaderManager;
@@ -15,6 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import static android.R.attr.id;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -50,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_editor);
+        setContentView(R.layout.activity_main);
 
         //setup FAB top open EditorActivity
         FloatingActionButton fab = (FloatingActionButton)findViewById(R.id.fab);
@@ -67,7 +71,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         View emptyView = findViewById(R.id.empty_inventory);
         inventoryListView.setEmptyView(emptyView);
 
-        mCursorAdapter = new InventoryCursorAdapter(this,null);
+        mCursorAdapter = new InventoryCursorAdapter(this, null);
         inventoryListView.setAdapter(mCursorAdapter);
 
         getLoaderManager().initLoader(INVENTORY_LOADER, null, this);
@@ -99,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         switch (item.getItemId()) {
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
+                //###################show dialogue#####################3
                 deleteAllItems();
                 return true;
         }
@@ -108,4 +113,63 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private void deleteAllItems() {
         getContentResolver().delete(InventoryContract.InventoryEntry.CONTENT_URI, null, null);
     }
+
+    //TODO: delete this whole comment later
+    //decrease the quantity by 1 when sale image is clicked in list view
+   /* public void decreaseQuantity(int mQuantity, long itemId){
+        int newQuantity = 0;
+        InventoryDbHelper mDbHelper;
+
+        mDbHelper = new InventoryDbHelper(this);
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        if (mQuantity > 0)
+            newQuantity = mQuantity -1;
+
+        ContentValues values = new ContentValues();
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY, newQuantity);
+
+        String selection = InventoryContract.InventoryEntry._ID + "=?";
+        String[] selectionArgs = new String[] { String.valueOf(itemId) };
+
+          //try by using content resolver
+           // getContentResolver().
+        // db.update(StockContract.StockEntry.TABLE_NAME, values, selection, selectionArgs);
+    }*/
+
+    //to update the database (decrease quantity by 1) when sale button is clicked in list items
+    public void update(Uri currentItemUri, int mQuantity){
+
+        int decreasedQuantity = 0;
+        if(mQuantity > 0)
+            decreasedQuantity = mQuantity - 1;
+
+        ContentValues values = new ContentValues();
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY, decreasedQuantity);
+
+        //this is an EXISTING pet, so update the pet with content URI: mCurrentPetUri
+        // and pass in the new ContentValues which has only quantity parameter as this method will be called
+        // only when sale button is clicked(which affects only the quantity).
+        // ALso, Pass in null for the selection and selection args because mCurrentPetUri will already
+        // identify the correct row in the database that we want to modify
+        int rowsAffected = getContentResolver().update(currentItemUri, values, null, null);
+        //shortcut: db.update(StockContract.StockEntry.TABLE_NAME, values, selection, selectionArgs);
+        //but by doing this you will be doing direct access to DB from the activity.
+        //Direct access to DB should be done by ContentProvider(which in this case is InventoryProvider)
+
+        //TODO: write Toast for rows affected ....is there any use of that POJO class, see other inventory code
+
+        //swap adapter
+        //TODO: see swapCursor is necessary from here as provider class me setNotificationUri() to hoga hee
+        //problem is is pets app i was not updating anything in list_items INSIDE 1st activity
+        //but here i am decreasing quantity by clicking on sale button
+
+        //TODO: so swapcursor or setadapter again??? or can decrease the item number inside InventoryCursorAdapter (it will be instant) and no need to swap adapter(i think so)
+        //because when u come back from editor activity to main activity then listview will be refreshed like petsapp.
+
+        //TODO: or adapter.setnotifydatasetchanged() call???which one to do
+        //mCursorAdapter.swapCursor(dbHelper.readStock()); // this needs a cursor..see other inventory app
+
+    }
 }
+

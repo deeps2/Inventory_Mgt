@@ -51,7 +51,7 @@
                         android:textAlignment="center" />
 
                     <TextView
-                        android:id="@+id/textView"
+                        android:id="@+id/price"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center_vertical"
@@ -76,6 +76,7 @@
                         android:textAlignment="center" />
 
                     <ImageView
+                        android:id="@+id/sell"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:src="@drawable/sale" />
@@ -96,6 +97,7 @@
                         android:textAlignment="center" />
 
                     <TextView
+                        android:id="@+id/quantity"
                         android:layout_width="match_parent"
                         android:layout_height="50dp"
                         android:gravity="center"

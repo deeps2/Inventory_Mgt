@@ -23,7 +23,7 @@
             android:layout_centerInParent="true"
             android:layout_centerHorizontal="true"
             android:layout_below="@id/empty_cart"
-            android:text="Pls Add some Items" />
+            android:text="Add some Items by clicking on +" />
 
     </RelativeLayout>
 

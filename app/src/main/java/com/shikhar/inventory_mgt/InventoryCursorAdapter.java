@@ -3,6 +3,8 @@ package com.shikhar.inventory_mgt;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,13 +36,17 @@ public class InventoryCursorAdapter extends CursorAdapter {
         TextView quantity = (TextView) view.findViewById(R.id.quantity);
         ImageView sale = (ImageView) view.findViewById(R.id.sell);
 
+        //TODO will have to change this as image is stored in DB as BLOB na..below u are picking from contentUri (which will pick from gallery)
+        byte[] image = cursor.getBlob(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE));
+        Bitmap imageBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+        itemImage.setImageBitmap(imageBitmap);
 
-        itemImage.setImageURI(Uri.parse( //setImage correspoding to Uri
+        /* itemImage.setImageURI(Uri.parse( //setImage correspoding to Uri
                 cursor.getString( //get Value
                         cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE //get Column Index
                         )
                 )
-        ));
+        ));*/
 
         itemName.setText(cursor.getString(
                 cursor.getColumnIndex(

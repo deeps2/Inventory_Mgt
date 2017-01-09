@@ -3,11 +3,13 @@ package com.shikhar.inventory_mgt;
 import android.Manifest;
 import android.app.LoaderManager;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -29,7 +31,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import static android.R.attr.value;
+import java.io.ByteArrayOutputStream;
+
+import static android.R.attr.bitmap;
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -45,6 +49,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private ImageView productImage;
 
     private String picturePath;
+    private byte[] imageBytes; //to store image in DB as BLOB
 
     private static int RESULT_LOAD_IMAGE = 1;
 
@@ -170,7 +175,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String supplierNameString = supplierName.getText().toString().trim();
         String supplierPhoneString = supplierPhone.getText().toString().trim();
         String supplierEmailString = supplierEmail.getText().toString().trim();
-        String productImageUri = picturePath;
+       // String productImageUri = picturePath;
 
         ContentValues values = new ContentValues();
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, itemNameString);
@@ -188,7 +193,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_NAME, supplierNameString);
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_PHONE, supplierPhoneString);
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_EMAIL, supplierEmailString);
-        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE, productImageUri);
+
+        //have to convert it to BLOB before inserting
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE, imageBytes);
 
         if(mCurrentItemUri == null){//new Item
             Uri newUri = getContentResolver().insert(InventoryContract.InventoryEntry.CONTENT_URI, values);
@@ -227,17 +234,50 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        return null;
+        // Since the editor shows all Item attributes, define a projection that contains all columns from inventory table
+        String[] projection = {
+               // InventoryContract.InventoryEntry._ID,  //TODO i think not needed
+                InventoryContract.InventoryEntry.COLUMN_ITEM_NAME,
+                InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE,
+                InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY,
+                InventoryContract.InventoryEntry.COLUMN_SUPPLIER_NAME,
+                InventoryContract.InventoryEntry.COLUMN_SUPPLIER_PHONE,
+                InventoryContract.InventoryEntry.COLUMN_SUPPLIER_EMAIL,
+                InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE};
+
+        // This loader will execute the ContentProvider's query method on a background thread
+        return new CursorLoader(this,   // Parent activity context
+                mCurrentItemUri,        // Query the content URI for the current pet
+                projection,             // Columns to include in the resulting Cursor
+                null,                   // No selection clause
+                null,                   // No selection arguments
+                null);                  // Default sort order
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        // Bail early if the cursor is null or there is less than 1 row in the cursor
+        if (cursor == null || cursor.getCount() < 1)
+            return;
 
+        // Proceed with moving to the first row of the cursor and reading data from it
+        // (This should be the only row in the cursor as we are in editor activity for a single Item)
+
+        if (cursor.moveToFirst()) {
+
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
+        // If the loader is invalidated, clear out all the data from the input fields.
+        itemName.setText("");
+        itemPrice.setText("");
+        itemQuantity.setText("");
+        supplierName.setText("");
+        supplierEmail.setText("");
+        supplierPhone.setText("");
+        productImage.setImageResource(R.drawable.add_image);
     }
 
     @Override
@@ -273,7 +313,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             picturePath = cursor.getString(columnIndex);
             cursor.close();
 
-            productImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+            Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+            productImage.setImageBitmap(bitmap);
+
+            //convert bitmap to byte[] to store in DB later
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
+            imageBytes = stream.toByteArray();
+           // productImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
         }
     }
 

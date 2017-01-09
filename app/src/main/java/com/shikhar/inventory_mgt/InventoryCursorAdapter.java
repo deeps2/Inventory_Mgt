@@ -16,6 +16,8 @@ import android.widget.TextView;
 public class InventoryCursorAdapter extends CursorAdapter {
 
     private final MainActivity activity;
+    private int mQuantity;
+    private Uri currentItemUri;
 
     public InventoryCursorAdapter(MainActivity context, Cursor c) {
         super(context, c, 0/*flags*/);
@@ -62,11 +64,11 @@ public class InventoryCursorAdapter extends CursorAdapter {
                 )
         ));
 
-        final int mQuantity = cursor.getInt(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY));
+        mQuantity = cursor.getInt(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY));
         quantity.setText(String.valueOf(mQuantity));
 
-        final long itemId = cursor.getLong(cursor.getColumnIndex(InventoryContract.InventoryEntry._ID));
-        final Uri currentItemUri = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, itemId);
+        long itemId = cursor.getLong(cursor.getColumnIndex(InventoryContract.InventoryEntry._ID));
+        currentItemUri = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, itemId);
 
         //decrease quantity by 1 when sale image is clicked
         sale.setOnClickListener(new View.OnClickListener() {

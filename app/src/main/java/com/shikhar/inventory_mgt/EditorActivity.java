@@ -30,10 +30,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.io.ByteArrayOutputStream;
-
-import static android.R.attr.bitmap;
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -261,10 +258,52 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             return;
 
         // Proceed with moving to the first row of the cursor and reading data from it
-        // (This should be the only row in the cursor as we are in editor activity for a single Item)
-
+        // (There should be the only row in the cursor as we are in editor activity for a single Item)
         if (cursor.moveToFirst()) {
+            itemName.setText(cursor.getString(
+                    cursor.getColumnIndex(
+                            InventoryContract.InventoryEntry.COLUMN_ITEM_NAME
+                    )
+            ));
 
+            itemPrice.setText(String.valueOf( //convert int to String so that it can be populated on TextView
+                    cursor.getInt( //get the int value
+                            cursor.getColumnIndex(
+                                    InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE
+                            )
+                    )
+            ));
+
+            itemQuantity.setText(String.valueOf( //convert int to String so that it can be populated on TextView
+                    cursor.getInt( //get the int value
+                            cursor.getColumnIndex(
+                                    InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY
+                            )
+                    )
+            ));
+
+            supplierName.setText(cursor.getString(
+                    cursor.getColumnIndex(
+                            InventoryContract.InventoryEntry.COLUMN_SUPPLIER_NAME
+                    )
+            ));
+
+            supplierPhone.setText(cursor.getString(
+                    cursor.getColumnIndex(
+                            InventoryContract.InventoryEntry.COLUMN_SUPPLIER_PHONE
+                    )
+            ));
+
+            supplierEmail.setText(cursor.getString(
+                    cursor.getColumnIndex(
+                            InventoryContract.InventoryEntry.COLUMN_SUPPLIER_EMAIL
+                    )
+            ));
+
+            //image
+            byte[] image = cursor.getBlob(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE));
+            Bitmap imageBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+            productImage.setImageBitmap(imageBitmap);
         }
     }
 

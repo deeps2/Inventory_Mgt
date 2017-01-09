@@ -2,22 +2,31 @@ package com.shikhar.inventory_mgt;
 
 import android.Manifest;
 import android.app.LoaderManager;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import static android.R.attr.value;
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -30,8 +39,11 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private Button plusButton;
     private Button minusButton;
     private Button addImageButton;
+    private ImageView productImage;
 
-    int MY_PERMISSION_REQUEST_READ_EXTERNAL_STORAGE = 1;
+    private String picturePath;
+
+    private static int RESULT_LOAD_IMAGE = 1;
 
     private static final int EXISTING_ITEM_LOADER = 0;
 
@@ -39,6 +51,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     /** Content URI for the existing item (null if it's a new item) */
     private Uri mCurrentItemUri;
+
+    // Storage Permissions variables
+    private static String[] PERMISSIONS_STORAGE = { Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE };
 
     // OnTouchListener that listens for any user touches on a View, implying that user is modifying the view, and we change the mItemHasChanged boolean to true.
     private View.OnTouchListener mTouchListener = new View.OnTouchListener() {
@@ -74,6 +89,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         plusButton = (Button)findViewById(R.id.plus);
         minusButton = (Button)findViewById(R.id.minus);
         addImageButton = (Button)findViewById(R.id.add_image_button);
+        productImage = (ImageView)findViewById(R.id.product_image);
 
         // Setup OnTouchListeners on all the input fields, so we can determine if the user
         // has touched or modified them. This will let us know if there are unsaved changes
@@ -88,6 +104,20 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         minusButton.setOnTouchListener(mTouchListener);
         addImageButton.setOnTouchListener(mTouchListener);
 
+        //when item quantity field inside EditText is changed (for input validation)
+        itemQuantity.addTextChangedListener(new TextValidator(itemQuantity) {
+            @Override
+            public void validate(TextView textView, String text) {
+                /* Validation code here */
+                if(!text.isEmpty()) {
+                    if (Integer.parseInt(text) > 100 || Integer.parseInt(text) < 0) {
+                        Toast.makeText(EditorActivity.this,"Quantity should be between 0-100",Toast.LENGTH_SHORT).show();
+                        itemQuantity.setText("0");
+                    }
+                }
+            }
+        });
+
         //handle clicks on +, - and add image button
         plusButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,9 +126,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
                 if (currentQuantity.isEmpty()){
                     itemQuantity.setText("1");
-                }
-                else if (currentQuantity.equals("100")){
-                    Toast.makeText(EditorActivity.this, "Max Quantity Reached", Toast.LENGTH_SHORT).show();
                 }
                 else{
                     int currentItemQuantity = Integer.parseInt(currentQuantity);
@@ -112,40 +139,90 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             public void onClick(View view) {
                 String currentQuantity = itemQuantity.getText().toString().trim();
 
-                if (currentQuantity.isEmpty() || currentQuantity.equals("0")){
-                    Toast.makeText(EditorActivity.this, "Quantity can't be negative", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    int currentItemQuantity = Integer.parseInt(currentQuantity);
-                    itemQuantity.setText(String.valueOf(currentItemQuantity - 1));
-                }
+                    if(!currentQuantity.isEmpty()) {
+                        int currentItemQuantity = Integer.parseInt(currentQuantity);
+                        itemQuantity.setText(String.valueOf(currentItemQuantity - 1));
+                    }
+                    else
+                        itemQuantity.setText("0");
             }
         });
 
         addImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                
+                //ask permissions
+                ActivityCompat.requestPermissions(EditorActivity.this, PERMISSIONS_STORAGE, 1);
             }
         });
+
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_editor, menu);
-        return true;
-    }
+    //get user input and save the item in DB
+    private void saveItem(){
+        //read from input fields
+        String itemNameString = itemName.getText().toString().trim();
+        String itemPriceString = itemPrice.getText().toString().trim();
+        String itemQuantityString = itemQuantity.getText().toString().trim();
+        String supplierNameString = supplierName.getText().toString().trim();
+        String supplierPhoneString = supplierPhone.getText().toString().trim();
+        String supplierEmailString = supplierEmail.getText().toString().trim();
+        String productImageUri = picturePath;
 
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        super.onPrepareOptionsMenu(menu);
-        // If this is a new Item, hide the "Delete" menu item.
-        if (mCurrentItemUri == null) {
-            MenuItem menuItem = menu.findItem(R.id.action_delete);
-            menuItem.setVisible(false);
+        ContentValues values = new ContentValues();
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, itemNameString);
+
+        int itemPriceInt = 0;
+        if (!TextUtils.isEmpty(itemPriceString))
+            itemPriceInt = Integer.parseInt(itemPriceString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE, itemPriceInt);
+
+        int itemQuantityInt = 0;
+        if (!TextUtils.isEmpty(itemQuantityString))
+            itemQuantityInt = Integer.parseInt(itemQuantityString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY, itemQuantityInt);
+
+        values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_NAME, supplierNameString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_PHONE, supplierPhoneString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_EMAIL, supplierEmailString);
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE, productImageUri);
+
+        if(mCurrentItemUri == null){//new Item
+            Uri newUri = getContentResolver().insert(InventoryContract.InventoryEntry.CONTENT_URI, values);
+
+            if(newUri == null)
+                Toast.makeText(this, "Error while saving new Item", Toast.LENGTH_SHORT);
+            else
+                Toast.makeText(this, "New Item added", Toast.LENGTH_SHORT);
         }
-        return true;
+        else { //existing Item. so update it
+            int rowsAffected = getContentResolver().update(mCurrentItemUri, values, null, null);
+            if (rowsAffected == 0)
+                Toast.makeText(this,"Error with updating Item",Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "Item Updated",Toast.LENGTH_SHORT).show();
+        }
     }
+
+    private void deleteItem() {
+        // Only perform the delete if this is an existing item.
+        if (mCurrentItemUri != null) {
+            // Call the ContentResolver to delete the Item at the given content URI.
+            // Pass in null for the selection and selection args because the mCurrentItemUri
+            // content URI already identifies the Item that we want.
+            int rowsDeleted = getContentResolver().delete(mCurrentItemUri, null, null);
+
+            if (rowsDeleted == 0)
+                Toast.makeText(this, "Error with deleting Item", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "Item Deleted", Toast.LENGTH_SHORT).show();
+
+        }
+        // Close the activity
+        finish();
+    }
+
+    
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
@@ -160,5 +237,85 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, Do the related task you need to do.
+                    Intent i = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(i, RESULT_LOAD_IMAGE);
+                } else {
+                    // permission denied
+                    Toast.makeText(EditorActivity.this, "Permission denied to read your Int/Ext storage", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
+    }
+
+    //to load the image from gallery into ImageView
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+            Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+            cursor.moveToFirst();
+
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            picturePath = cursor.getString(columnIndex);
+            cursor.close();
+
+            productImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_editor, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        // If this is a new Item, hide the "Delete" menu item.
+        if (mCurrentItemUri == null) {
+            MenuItem menuItem = menu.findItem(R.id.action_delete_item);
+            menuItem.setVisible(false);
+        }
+        return true;
+    }
+
+    //TODO write code when save is clicked and fields are not filled..color them with red or set drawable in edit text or make some view visible "!" vala
+    //TODO delete item/ALL options and other options jo bhee hai jaise back pe dialog popup
+
+    //to validate the item quantity inside the EditText
+    public abstract class TextValidator implements TextWatcher {
+        private final TextView textView; //This will work as every EditText is a TextView as well
+
+        public TextValidator(TextView textView) {
+            this.textView = textView;
+        }
+
+        public abstract void validate(TextView textView, String text);
+
+        @Override
+        final public void afterTextChanged(Editable s) {
+            String text = textView.getText().toString().trim();
+            validate(textView, text);
+        }
+
+        @Override
+        final public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Don't care */ }
+
+        @Override
+        final public void onTextChanged(CharSequence s, int start, int before, int count) { /* Don't care */ }
     }
 }

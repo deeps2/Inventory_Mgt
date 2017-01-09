@@ -14,7 +14,7 @@ public class InventoryContract {
     public static final String PATH_INVENTORY = "inventory";
 
     public static final class InventoryEntry implements BaseColumns {
-
+                                        //content://com.example.android.inventory_mgt/inventory
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_INVENTORY);
 
         public final static String TABLE_NAME = "inventory";
@@ -27,6 +27,8 @@ public class InventoryContract {
         public final static String COLUMN_SUPPLIER_PHONE = "phone";
         public final static String COLUMN_SUPPLIER_EMAIL = "email";
         public final static String COLUMN_ITEM_IMAGE = "image";
+        //NOTE: all of these are strings as these are DB, table and column Names. That doesn't mean that all Columns have String datatypes
+        //for datatypes of Columns see InventoryDbHelper onCreate();
 
 
         //CURSOR_DIR_BASE_TYPE (which maps to the constant "vnd.android.cursor.dir")

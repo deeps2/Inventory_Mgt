@@ -19,7 +19,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -109,6 +108,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         minusButton.setOnTouchListener(mTouchListener);
         addImageButton.setOnTouchListener(mTouchListener);
 
+        productImage.setTag(R.drawable.add_image); //for formValidation
+        //TODO: move it to formValidate section
         //when item quantity field inside EditText is changed (for input validation)
         itemQuantity.addTextChangedListener(new TextValidator(itemQuantity) {
             @Override
@@ -116,7 +117,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 /* Validation code here */
                 if(!text.isEmpty()) {
                     if (Integer.parseInt(text) > 100 || Integer.parseInt(text) < 0) {
-                        Toast.makeText(EditorActivity.this,"Quantity should be between 0-100",Toast.LENGTH_SHORT).show();
+                        itemQuantity.setError("Quantity should be between 0-100");
                         itemQuantity.setText("0");
                     }
                 }
@@ -127,6 +128,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         plusButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                itemQuantity.setError(null);//to hide the error message of Quantity EditText when + button is clicked.
+                // error message seems to stay up in quantity EditText even after buttons are clicked
+                // because when buttons are clicked then EditText view will not be in focus
                 String currentQuantity = itemQuantity.getText().toString().trim();
 
                 if (currentQuantity.isEmpty()){
@@ -142,6 +146,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         minusButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                itemQuantity.setError(null);//to hide the error message of Quantity EditText when - button is clicked.
+                // error message seems to stay up in quantity EditText even after buttons are clicked
+                // because when buttons are clicked then EditText view will not be in focus
                 String currentQuantity = itemQuantity.getText().toString().trim();
 
                     if(!currentQuantity.isEmpty()) {
@@ -173,18 +180,23 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String supplierPhoneString = supplierPhone.getText().toString().trim();
         String supplierEmailString = supplierEmail.getText().toString().trim();
        // TODO String productImageUri = picturePath;
+        boolean status = formValidate(itemNameString, itemPriceString, itemQuantityString, supplierNameString,
+                supplierPhoneString, supplierEmailString, productImage);
+
+        if(status == false)
+            return;
 
         ContentValues values = new ContentValues();
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, itemNameString);
 
-        int itemPriceInt = 0;
-        if (!TextUtils.isEmpty(itemPriceString))
-            itemPriceInt = Integer.parseInt(itemPriceString);
+       // TODO int itemPriceInt = 0;
+       // TODO if (!TextUtils.isEmpty(itemPriceString))
+        int itemPriceInt = Integer.parseInt(itemPriceString);
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE, itemPriceInt);
 
-        int itemQuantityInt = 0;
-        if (!TextUtils.isEmpty(itemQuantityString))
-            itemQuantityInt = Integer.parseInt(itemQuantityString);
+        //TODO int itemQuantityInt = 0;
+        //TODO if (!TextUtils.isEmpty(itemQuantityString))
+        int itemQuantityInt = Integer.parseInt(itemQuantityString);
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY, itemQuantityInt);
 
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_NAME, supplierNameString);
@@ -207,6 +219,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             else
                 Toast.makeText(this, "Item Updated",Toast.LENGTH_SHORT).show();
         }
+
+        finish(); //close the activity when save is done
     }
 
     private void deleteItem() {
@@ -302,6 +316,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             byte[] image = cursor.getBlob(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE));
             Bitmap imageBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
             productImage.setImageBitmap(imageBitmap);
+            productImage.setTag(imageBitmap);
+            addImageButton.setError(null);//to hide the error icon when image is set
         }
     }
 
@@ -315,6 +331,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         supplierEmail.setText("");
         supplierPhone.setText("");
         productImage.setImageResource(R.drawable.add_image);
+        productImage.setTag(R.drawable.add_image);
+        addImageButton.setError(null);//to hide the error icon when image is set
     }
 
     @Override
@@ -352,7 +370,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
             Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
             productImage.setImageBitmap(bitmap);
-
+            productImage.setTag(bitmap);
+            addImageButton.setError(null); //to hide the error icon when image is set
             //convert bitmap to byte[] to store in DB later
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
@@ -373,7 +392,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
             case R.id.action_save:
                 saveItem();
-                finish();
                 return true;
 
             case R.id.action_delete_item:
@@ -491,5 +509,29 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
         @Override
         final public void onTextChanged(CharSequence s, int start, int before, int count) { /* Don't care */ }
+    }
+
+    //for Form Validation
+    boolean formValidate(String itemNameString, String itemPriceString, String itemQuantityString,
+                      String supplierNameString, String supplierPhoneString, String supplierEmailString, ImageView productImage) {
+
+        boolean status = true;
+
+        //TODO: remove this if else
+        /*if(productImage.getTag().equals(R.drawable.add_image)) {
+
+            //  Toast.makeText(this, "equal", Toast.LENGTH_SHORT).show();
+           // status = false;
+        }
+        else {
+            Toast.makeText(this, "Not equal", Toast.LENGTH_SHORT).show();
+            status = false;
+        }*/
+
+        if(productImage.getTag().equals(R.drawable.add_image)){
+            addImageButton.setError("Please choose an image for product");
+            status = false;
+        }
+        return status;
     }
 }

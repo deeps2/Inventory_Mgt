@@ -26,12 +26,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {
-                InventoryContract.InventoryEntry._ID,
+                //TODO InventoryContract.InventoryEntry._ID,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_NAME,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY};
 
+        // This loader will execute the ContentProvider's query method on a background thread
         return new CursorLoader(this, InventoryContract.InventoryEntry.CONTENT_URI, projection, null, null, null);
 
     }
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
                 //Form the content URI that represents the specific item that was clicked on by appending ID to the CONTENT_URI
                 Uri currentitemUri = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, id);
-
+                                                                //content://com.example.android.inventory_mgt/inventory + /id
                 intent.setData(currentitemUri);
                 startActivity(intent);
             }

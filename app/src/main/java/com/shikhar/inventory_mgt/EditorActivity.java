@@ -172,7 +172,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String supplierNameString = supplierName.getText().toString().trim();
         String supplierPhoneString = supplierPhone.getText().toString().trim();
         String supplierEmailString = supplierEmail.getText().toString().trim();
-       // String productImageUri = picturePath;
+       // TODO String productImageUri = picturePath;
 
         ContentValues values = new ContentValues();
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, itemNameString);
@@ -190,8 +190,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_NAME, supplierNameString);
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_PHONE, supplierPhoneString);
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_EMAIL, supplierEmailString);
-
-        //have to convert it to BLOB before inserting
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE, imageBytes);
 
         if(mCurrentItemUri == null){//new Item
@@ -359,7 +357,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
             imageBytes = stream.toByteArray();
-           // productImage.setImageBitmap(BitmapFactory.decodeFile(picturePath));
         }
     }
 

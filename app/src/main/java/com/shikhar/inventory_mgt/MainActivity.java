@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         switch (item.getItemId()) {
             // Respond to a click on the "Delete all entries" menu option
             case R.id.action_delete_all_entries:
-                //###################show dialogue#####################3
+                //TODO ###################show dialogue#####################3
                 deleteAllItems();
                 return true;
         }

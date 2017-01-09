@@ -74,7 +74,7 @@ public class InventoryCursorAdapter extends CursorAdapter {
         sale.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-              //  activity.decreaseQuantity(mQuantity, itemId);
+              //  TODO activity.decreaseQuantity(mQuantity, itemId);
                 activity.update(currentItemUri, mQuantity);
             }
         });

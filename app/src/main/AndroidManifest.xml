@@ -29,5 +29,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.shikhar.inventory_mgt.MainActivity" />
         </activity>
+
+        <provider
+            android:name=".InventoryProvider"
+            android:authorities="com.example.android.inventory_mgt"
+            android:exported="false" />
+
     </application>
 </manifest>

@@ -7,6 +7,9 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.util.Log;
+
+import static com.shikhar.inventory_mgt.InventoryDbHelper.LOG_TAG;
 
 public class InventoryProvider extends ContentProvider  {
 
@@ -75,8 +78,22 @@ public class InventoryProvider extends ContentProvider  {
     }
 
     private Uri insertInventory(Uri uri, ContentValues values){
-        //TODO
-        return null;
+        //form validation is already done in Editor Activity so just insert the values
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        long id = db.insert(InventoryContract.InventoryEntry.TABLE_NAME, null, values);
+
+        if (id == -1) {
+            Log.e(LOG_TAG, "Failed to insert row for " + uri);
+            return null;
+        }
+
+        //Notify all listeners that the data has changed for the pet content URI- content://com.example.android.inventory_mgt/inventory
+        getContext().getContentResolver().notifyChange(uri, null);
+
+        // Once we know the ID of the new row in the table, return the new URI with the ID appended to the end of it
+        return ContentUris.withAppendedId(uri, id);
     }
 
     @Override
@@ -124,8 +141,21 @@ public class InventoryProvider extends ContentProvider  {
     }
 
     private int updateInventory(Uri uri, ContentValues values, String selection, String[] selectionArgs){
-        //TODO change 0
-        return 0;
+        //form validation is already done in Editor Activity so just update the values
+
+        // If there are no values to update, then don't try to update the database
+        if (values.size() == 0) {
+            return 0;
+        }
+
+        // Otherwise, get writeable database to update the data
+        SQLiteDatabase database = mDbHelper.getWritableDatabase();
+
+        //Notify all listeners that the data has changed for the pet content URI- content://com.example.android.inventory_mgt/inventory
+        getContext().getContentResolver().notifyChange(uri, null);
+
+        // Returns the number of database rows affected by the update statement
+        return database.update(InventoryContract.InventoryEntry.TABLE_NAME, values, selection, selectionArgs);
     }
 
 

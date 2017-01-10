@@ -109,8 +109,8 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         addImageButton.setOnTouchListener(mTouchListener);
 
         productImage.setTag(R.drawable.add_image); //for formValidation
-        //TODO: move it to formValidate section
-        //when item quantity field inside EditText is changed (for input validation)
+
+        //when item quantity field inside EditText is changed (for input validation in real time)
         itemQuantity.addTextChangedListener(new TextValidator(itemQuantity) {
             @Override
             public void validate(TextView textView, String text) {
@@ -179,7 +179,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String supplierNameString = supplierName.getText().toString().trim();
         String supplierPhoneString = supplierPhone.getText().toString().trim();
         String supplierEmailString = supplierEmail.getText().toString().trim();
-       // TODO String productImageUri = picturePath;
+
         boolean status = formValidate(itemNameString, itemPriceString, itemQuantityString, supplierNameString,
                 supplierPhoneString, supplierEmailString, productImage);
 
@@ -189,13 +189,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         ContentValues values = new ContentValues();
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_NAME, itemNameString);
 
-       // TODO int itemPriceInt = 0;
-       // TODO if (!TextUtils.isEmpty(itemPriceString))
         int itemPriceInt = Integer.parseInt(itemPriceString);
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE, itemPriceInt);
 
-        //TODO int itemQuantityInt = 0;
-        //TODO if (!TextUtils.isEmpty(itemQuantityString))
         int itemQuantityInt = Integer.parseInt(itemQuantityString);
         values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY, itemQuantityInt);
 
@@ -395,7 +391,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 return true;
 
             case R.id.action_delete_item:
-                // Pop up confirmation dialog for delete
+                // Pop up confirmation dialog for delete( this will only be visible when Editor activity is opened for updating an existing item and not during addition of a new Item)
                 showDeleteConfirmationDialog();
                 return true;
 
@@ -485,7 +481,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         return true;
     }
 
-    //TODO write code when save is clicked and fields are not filled..color them with red or set drawable in edit text or make some view visible "!" vala
     //TODO delete item/ALL options and other options jo bhee hai jaise back pe dialog popup
 
     //to validate the item quantity inside the EditText
@@ -517,21 +512,41 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
         boolean status = true;
 
-        //TODO: remove this if else
-        /*if(productImage.getTag().equals(R.drawable.add_image)) {
-
-            //  Toast.makeText(this, "equal", Toast.LENGTH_SHORT).show();
-           // status = false;
-        }
-        else {
-            Toast.makeText(this, "Not equal", Toast.LENGTH_SHORT).show();
+        if(itemNameString.equals("")){
             status = false;
-        }*/
+            itemName.setError("Item Name required");
+        }
+
+        if(itemPriceString.equals("")){
+            status = false;
+            itemPrice.setError("Item Price required");
+        }
+
+        if(itemQuantityString.equals("")){
+            status = false;
+            itemQuantity.setError("Item Quantity required");
+        }
+
+        if(supplierNameString.equals("")){
+            status = false;
+            supplierName.setError("Supplier Name required");
+        }
+
+        if(supplierPhoneString.equals("")){
+            status = false;
+            supplierPhone.setError("Supplier Phone required");
+        }
+
+        if(supplierEmailString.equals("")){
+            status = false;
+            supplierEmail.setError("Supplier Email required");
+        }
 
         if(productImage.getTag().equals(R.drawable.add_image)){
-            addImageButton.setError("Please choose an image for product");
             status = false;
+            addImageButton.setError("Please choose an image for product");
         }
+
         return status;
     }
 }

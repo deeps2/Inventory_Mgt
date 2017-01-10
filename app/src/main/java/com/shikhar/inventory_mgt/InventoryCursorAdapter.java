@@ -14,7 +14,6 @@ import android.widget.TextView;
 public class InventoryCursorAdapter extends CursorAdapter {
 
     private final MainActivity activity; //IMPORTANT: for calling update() in MainActivity
-    private int mQuantity;
 
     public InventoryCursorAdapter(MainActivity context, Cursor c) { //IMPORTANT: MainActivity context is needed as I will be calling update() if sale button is clicked
         super(context, c, 0/*flags*/);
@@ -32,7 +31,7 @@ public class InventoryCursorAdapter extends CursorAdapter {
         ImageView itemImage = (ImageView) view.findViewById(R.id.item_image);
         TextView itemName = (TextView) view.findViewById(R.id.item_name);
         TextView price = (TextView) view.findViewById(R.id.price);
-        TextView quantity = (TextView) view.findViewById(R.id.quantity);
+        final TextView quantity = (TextView) view.findViewById(R.id.quantity);
         ImageView sale = (ImageView) view.findViewById(R.id.sell);
 
         itemImage.setImageURI(Uri.parse( //setImage correspoding to Uri
@@ -56,10 +55,8 @@ public class InventoryCursorAdapter extends CursorAdapter {
                 ) + " $"
         ));
 
-        mQuantity = cursor.getInt(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY));
+        int mQuantity = cursor.getInt(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY));
         quantity.setText(String.valueOf(mQuantity));
-
-
 
         //decrease quantity by 1 when sale image is clicked
         sale.setOnClickListener(new View.OnClickListener() {
@@ -67,11 +64,10 @@ public class InventoryCursorAdapter extends CursorAdapter {
             Uri currentItemUri = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, clickedItemId);
 
             int clickedQuantity = cursor.getInt(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY));
-
             @Override
             public void onClick(View view) {
-              //  TODO activity.decreaseQuantity(mQuantity, itemId);
-                activity.update(currentItemUri, clickedQuantity);
+                //decrease quantity by 1 corresponding to card which was clicked in Listview
+                activity.update(currentItemUri, clickedQuantity, quantity);
             }
         });
     }

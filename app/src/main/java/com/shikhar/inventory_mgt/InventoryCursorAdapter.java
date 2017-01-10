@@ -3,8 +3,6 @@ package com.shikhar.inventory_mgt;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,11 +13,10 @@ import android.widget.TextView;
 
 public class InventoryCursorAdapter extends CursorAdapter {
 
-    private final MainActivity activity;
+    private final MainActivity activity; //IMPORTANT: for calling update() in MainActivity
     private int mQuantity;
-    private Uri currentItemUri;
 
-    public InventoryCursorAdapter(MainActivity context, Cursor c) {
+    public InventoryCursorAdapter(MainActivity context, Cursor c) { //IMPORTANT: MainActivity context is needed as I will be calling update() if sale button is clicked
         super(context, c, 0/*flags*/);
         activity = context;
     }
@@ -38,17 +35,12 @@ public class InventoryCursorAdapter extends CursorAdapter {
         TextView quantity = (TextView) view.findViewById(R.id.quantity);
         ImageView sale = (ImageView) view.findViewById(R.id.sell);
 
-        //TODO will have to change this as image is stored in DB as BLOB na..below u are picking from contentUri (which will pick from gallery)
-        byte[] image = cursor.getBlob(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE));
-        Bitmap imageBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
-        itemImage.setImageBitmap(imageBitmap);
-
-        /* itemImage.setImageURI(Uri.parse( //setImage correspoding to Uri
+        itemImage.setImageURI(Uri.parse( //setImage correspoding to Uri
                 cursor.getString( //get Value
                         cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE //get Column Index
                         )
                 )
-        ));*/
+        ));
 
         itemName.setText(cursor.getString(
                 cursor.getColumnIndex(
@@ -61,21 +53,25 @@ public class InventoryCursorAdapter extends CursorAdapter {
                         cursor.getColumnIndex(
                                 InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE
                         )
-                )
+                ) + " $"
         ));
 
         mQuantity = cursor.getInt(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY));
         quantity.setText(String.valueOf(mQuantity));
 
-        long itemId = cursor.getLong(cursor.getColumnIndex(InventoryContract.InventoryEntry._ID));
-        currentItemUri = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, itemId);
+
 
         //decrease quantity by 1 when sale image is clicked
         sale.setOnClickListener(new View.OnClickListener() {
+            long clickedItemId = cursor.getLong(cursor.getColumnIndex(InventoryContract.InventoryEntry._ID));
+            Uri currentItemUri = ContentUris.withAppendedId(InventoryContract.InventoryEntry.CONTENT_URI, clickedItemId);
+
+            int clickedQuantity = cursor.getInt(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY));
+
             @Override
             public void onClick(View view) {
               //  TODO activity.decreaseQuantity(mQuantity, itemId);
-                activity.update(currentItemUri, mQuantity);
+                activity.update(currentItemUri, clickedQuantity);
             }
         });
     }

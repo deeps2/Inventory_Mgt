@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -29,7 +27,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import java.io.ByteArrayOutputStream;
 
 public class EditorActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -44,8 +41,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     private Button addImageButton;
     private ImageView productImage;
 
-    private String picturePath;
-    private byte[] imageBytes; //to store image in DB as BLOB
+    private String picturePath = "";
 
     private static int RESULT_LOAD_IMAGE = 1;
 
@@ -73,17 +69,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        Intent intent = getIntent();
-        mCurrentItemUri = intent.getData();
-        if(mCurrentItemUri == null) {
-            setTitle("Add new Item");
-           //TODO: invalidateOptionsMenu(); is this necessary as I am already hiding he delete option in onPrepareOptionsMenu
-        }
-        else {
-            setTitle("Edit Item");
-            getLoaderManager().initLoader(EXISTING_ITEM_LOADER, null, this);
-        }
-
         itemName = (EditText)findViewById(R.id.product_name);
         itemPrice = (EditText)findViewById(R.id.product_price);
         itemQuantity = (EditText)findViewById(R.id.item_quantity);
@@ -108,13 +93,23 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         minusButton.setOnTouchListener(mTouchListener);
         addImageButton.setOnTouchListener(mTouchListener);
 
-        productImage.setTag(R.drawable.add_image); //for formValidation
+        Intent intent = getIntent();
+        mCurrentItemUri = intent.getData();
+        if(mCurrentItemUri == null) {
+            setTitle("Add new Item");
+            //TODO: invalidateOptionsMenu(); is this necessary as I am already hiding he delete option in onPrepareOptionsMenu
+        }
+        else {
+            setTitle("Edit Item");
+            //start the loader and fill in the EditTexts and Image in editor activity
+            getLoaderManager().initLoader(EXISTING_ITEM_LOADER, null, this);
+        }
 
         //when item quantity field inside EditText is changed (for input validation in real time)
         itemQuantity.addTextChangedListener(new TextValidator(itemQuantity) {
             @Override
             public void validate(TextView textView, String text) {
-                /* Validation code here */
+                // Validation code here
                 if(!text.isEmpty()) {
                     if (Integer.parseInt(text) > 100 || Integer.parseInt(text) < 0) {
                         itemQuantity.setError("Quantity should be between 0-100");
@@ -198,7 +193,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_NAME, supplierNameString);
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_PHONE, supplierPhoneString);
         values.put(InventoryContract.InventoryEntry.COLUMN_SUPPLIER_EMAIL, supplierEmailString);
-        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE, imageBytes);
+        values.put(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE, picturePath);
 
         if(mCurrentItemUri == null){//new Item
             Uri newUri = getContentResolver().insert(InventoryContract.InventoryEntry.CONTENT_URI, values);
@@ -308,11 +303,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                     )
             ));
 
-            //image
-            byte[] image = cursor.getBlob(cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE));
-            Bitmap imageBitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
-            productImage.setImageBitmap(imageBitmap);
-            productImage.setTag(imageBitmap);
+            picturePath = cursor.getString(
+                    cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE
+                    )
+            );
+            productImage.setImageURI(Uri.parse(picturePath));
+
             addImageButton.setError(null);//to hide the error icon when image is set
         }
     }
@@ -328,6 +324,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         supplierPhone.setText("");
         productImage.setImageResource(R.drawable.add_image);
         productImage.setTag(R.drawable.add_image);
+        picturePath = "";
         addImageButton.setError(null);//to hide the error icon when image is set
     }
 
@@ -364,14 +361,22 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             picturePath = cursor.getString(columnIndex);
             cursor.close();
 
+            productImage.setImageURI(Uri.parse(picturePath)); //load image from its path and not by decoding the bytes ->imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath)); as it will be very slow
+            addImageButton.setError(null);
+
+
+                   /* TODO
             Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+            //TODO...Bitmap.Options and set size
             productImage.setImageBitmap(bitmap);
             productImage.setTag(bitmap);
             addImageButton.setError(null); //to hide the error icon when image is set
+
             //convert bitmap to byte[] to store in DB later
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
-            imageBytes = stream.toByteArray();
+            //TODO...Bitmap.Options and set size
+            imageBytes = stream.toByteArray();*/
         }
     }
 
@@ -542,7 +547,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             supplierEmail.setError("Supplier Email required");
         }
 
-        if(productImage.getTag().equals(R.drawable.add_image)){
+        if(picturePath.equals("")){
             status = false;
             addImageButton.setError("Please choose an image for product");
         }

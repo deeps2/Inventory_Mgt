@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {
-                //TODO InventoryContract.InventoryEntry._ID,
+                InventoryContract.InventoryEntry._ID,   //IMP: without this onLoadFinished fail(even though i don't want to display it in list_items inside ListView)
                 InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_NAME,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE,
@@ -34,12 +34,11 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
 
         // This loader will execute the ContentProvider's query method on a background thread
         return new CursorLoader(this, InventoryContract.InventoryEntry.CONTENT_URI, projection, null, null, null);
-
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-        //update with new cursor containing updated pet data
+        //update with new cursor containing updated Inventory data
         mCursorAdapter.swapCursor(data);
     }
 

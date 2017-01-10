@@ -28,7 +28,11 @@ public class InventoryDbHelper extends SQLiteOpenHelper {
                 + InventoryContract.InventoryEntry.COLUMN_SUPPLIER_NAME + " TEXT NOT NULL, "
                 + InventoryContract.InventoryEntry.COLUMN_SUPPLIER_PHONE + " TEXT NOT NULL, "
                 + InventoryContract.InventoryEntry.COLUMN_SUPPLIER_EMAIL + " TEXT NOT NULL, "
-                + InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE + " BLOB);";
+                + InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE + " TEXT NOT NULL);";
+
+        /* Images are large in size, they should not be stored as BLOB in DB. Instead they should be stored in Disk(Internal storage/SD card)
+           and a reference to that image should be stored in DB. for more info: https://www.sqlite.org/intern-v-extern-blob.html
+        */
 
         // Execute the SQL statement
         db.execSQL(SQL_CREATE_PETS_TABLE);

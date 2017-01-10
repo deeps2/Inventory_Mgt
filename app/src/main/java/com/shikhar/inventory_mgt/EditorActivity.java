@@ -69,6 +69,17 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
+        Intent intent = getIntent();
+        mCurrentItemUri = intent.getData();
+        if(mCurrentItemUri == null) {
+            setTitle("Add new Item");
+        }
+        else {
+            setTitle("Edit Item");
+            //start the loader and fill in the EditTexts and Image in editor activity
+            getLoaderManager().initLoader(EXISTING_ITEM_LOADER, null, this);
+        }
+
         itemName = (EditText)findViewById(R.id.product_name);
         itemPrice = (EditText)findViewById(R.id.product_price);
         itemQuantity = (EditText)findViewById(R.id.item_quantity);
@@ -92,18 +103,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         plusButton.setOnTouchListener(mTouchListener);
         minusButton.setOnTouchListener(mTouchListener);
         addImageButton.setOnTouchListener(mTouchListener);
-
-        Intent intent = getIntent();
-        mCurrentItemUri = intent.getData();
-        if(mCurrentItemUri == null) {
-            setTitle("Add new Item");
-            //TODO: invalidateOptionsMenu(); is this necessary as I am already hiding he delete option in onPrepareOptionsMenu
-        }
-        else {
-            setTitle("Edit Item");
-            //start the loader and fill in the EditTexts and Image in editor activity
-            getLoaderManager().initLoader(EXISTING_ITEM_LOADER, null, this);
-        }
 
         //when item quantity field inside EditText is changed (for input validation in real time)
         itemQuantity.addTextChangedListener(new TextValidator(itemQuantity) {
@@ -176,9 +175,9 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         String supplierEmailString = supplierEmail.getText().toString().trim();
 
         boolean status = formValidate(itemNameString, itemPriceString, itemQuantityString, supplierNameString,
-                supplierPhoneString, supplierEmailString, productImage);
+                supplierPhoneString, supplierEmailString);
 
-        if(status == false)
+        if(!status)
             return;
 
         ContentValues values = new ContentValues();
@@ -226,7 +225,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 Toast.makeText(this, "Error with deleting Item", Toast.LENGTH_SHORT).show();
             else
                 Toast.makeText(this, "Item Deleted", Toast.LENGTH_SHORT).show();
-
         }
         // Close the activity
         finish();
@@ -236,7 +234,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         // Since the editor shows all Item attributes, define a projection that contains all columns from inventory table
         String[] projection = {
-               // InventoryContract.InventoryEntry._ID,  //TODO i think not needed
+               // InventoryContract.InventoryEntry._ID,  //Not needed as I will not be showing ID in Editor Activity's Form
                 InventoryContract.InventoryEntry.COLUMN_ITEM_NAME,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_PRICE,
                 InventoryContract.InventoryEntry.COLUMN_ITEM_QUANTITY,
@@ -361,22 +359,10 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             picturePath = cursor.getString(columnIndex);
             cursor.close();
 
-            productImage.setImageURI(Uri.parse(picturePath)); //load image from its path and not by decoding the bytes ->imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath)); as it will be very slow
+            productImage.setImageURI(Uri.parse(picturePath));
+            //load image from its path and not by decoding the bytes ->imageView.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+            // as it will be very slow
             addImageButton.setError(null);
-
-
-                   /* TODO
-            Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
-            //TODO...Bitmap.Options and set size
-            productImage.setImageBitmap(bitmap);
-            productImage.setTag(bitmap);
-            addImageButton.setError(null); //to hide the error icon when image is set
-
-            //convert bitmap to byte[] to store in DB later
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 0, stream);
-            //TODO...Bitmap.Options and set size
-            imageBytes = stream.toByteArray();*/
         }
     }
 
@@ -396,12 +382,15 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 return true;
 
             case R.id.action_delete_item:
-                // Pop up confirmation dialog for delete( this will only be visible when Editor activity is opened for updating an existing item and not during addition of a new Item)
+                // Pop up confirmation dialog for delete( this will only be visible when Editor
+                // activity is opened for updating an existing item and not during addition of a new Item)
                 showDeleteConfirmationDialog();
                 return true;
 
             case R.id.order_more:
-                //TODO open dialog and then intent according to option chosen
+                //will be visible only while updating and not while adding new Item
+                showOrderDialog();
+                return true;
 
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
@@ -415,6 +404,40 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    void showOrderDialog() {
+        // Create an AlertDialog.Builder and set the message, and click listeners for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Choose an option to place your order");
+
+        builder.setPositiveButton("Email", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                //send Email Intent
+
+                Intent intent = new Intent(Intent.ACTION_SENDTO);
+                intent.setData(Uri.parse("mailto:")); // only email apps should handle this
+                intent.putExtra(Intent.EXTRA_EMAIL, new String[] {supplierEmail.getText().toString().trim()});
+                intent.putExtra(Intent.EXTRA_SUBJECT, "Need More Items");
+                intent.putExtra(Intent.EXTRA_TEXT, "Please send additional" + " " + itemQuantity.getText().toString().trim() + " " + itemName.getText().toString().trim());
+                if (intent.resolveActivity(getPackageManager()) != null)
+                    startActivity(intent);
+            }
+        });
+
+        builder.setNegativeButton("Phone", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                //send Dialer Intent
+                Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + supplierPhone.getText().toString().trim()));
+                startActivity(intent);
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     @Override
@@ -482,11 +505,12 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         if (mCurrentItemUri == null) {
             MenuItem menuItem = menu.findItem(R.id.action_delete_item);
             menuItem.setVisible(false);
+
+            menuItem = menu.findItem(R.id.order_more);
+            menuItem.setVisible(false);
         }
         return true;
     }
-
-    //TODO delete item/ALL options and other options jo bhee hai jaise back pe dialog popup
 
     //to validate the item quantity inside the EditText
     public abstract class TextValidator implements TextWatcher {
@@ -513,7 +537,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
 
     //for Form Validation
     boolean formValidate(String itemNameString, String itemPriceString, String itemQuantityString,
-                      String supplierNameString, String supplierPhoneString, String supplierEmailString, ImageView productImage) {
+                      String supplierNameString, String supplierPhoneString, String supplierEmailString) {
 
         boolean status = true;
 

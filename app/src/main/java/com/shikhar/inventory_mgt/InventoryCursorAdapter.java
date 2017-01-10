@@ -34,7 +34,7 @@ public class InventoryCursorAdapter extends CursorAdapter {
         final TextView quantity = (TextView) view.findViewById(R.id.quantity);
         ImageView sale = (ImageView) view.findViewById(R.id.sell);
 
-        itemImage.setImageURI(Uri.parse( //setImage correspoding to Uri
+        itemImage.setImageURI(Uri.parse( //setImage corresponding to Uri
                 cursor.getString( //get Value
                         cursor.getColumnIndex(InventoryContract.InventoryEntry.COLUMN_ITEM_IMAGE //get Column Index
                         )

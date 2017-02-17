@@ -1,6 +1,10 @@
 # Inventory_Mgt<img src="app/src/main/res/mipmap-xhdpi/ic_launcher.png"/>
 App to create & manage Inventory Details Database (supports all CRUD operations)
 
+Video Demo
+------------
+https://www.youtube.com/watch?v=1RhmeO5z4tY
+
 #ScreenShots
 <img src="https://firebasestorage.googleapis.com/v0/b/delhi06-31a81.appspot.com/o/inv1.jpg?alt=media&token=11537590-c24d-4139-a3b7-fcaa9df6680b" width=280/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <img src="https://firebasestorage.googleapis.com/v0/b/delhi06-31a81.appspot.com/o/inv2.jpg?alt=media&token=0de6dae2-d6ae-4876-bc88-ed3b200f76eb" width=280/></br></br></br></br></br></br> 
@@ -27,7 +31,3 @@ App to create & manage Inventory Details Database (supports all CRUD operations)
 - Alert Dialogues & Menus
 - ListView
 - Android Permission
-
-Video Demo
-------------
-https://www.youtube.com/watch?v=1RhmeO5z4tY
